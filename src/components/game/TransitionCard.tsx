@@ -21,18 +21,17 @@ export function TransitionCard({ score, onContinue, className = "" }: Transition
   return (
     <motion.section
       aria-labelledby="transition-heading"
-      className={`overflow-hidden rounded-3xl bg-brand-navy/95 text-white shadow-lift ring-1 ring-white/10 backdrop-blur-sm ${className}`}
-      initial={reduce ? false : { opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: reduce ? 0 : 0.5 }}
+      className={`game-panel ${className}`}
+      initial={reduce ? false : { opacity: 0, y: 60, scale: 0.8 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 18 }}
     >
-      <div className="tricolour-rule h-1.5" aria-hidden />
       <div className="px-6 py-5 kiosk:px-[2.25rem] kiosk:py-[clamp(1rem,2.4vh,1.5rem)]">
         {/* Heading and message beside the score. */}
         <div className="flex items-center gap-5 kiosk:gap-[1.75rem]">
           {score !== null && (
             <div
-              className="flex h-24 w-24 shrink-0 flex-col items-center justify-center rounded-full bg-white/5 ring-4 ring-brand-gold kiosk:h-[clamp(6rem,11vh,7.5rem)] kiosk:w-[clamp(6rem,11vh,7.5rem)]"
+              className="flex h-24 w-24 shrink-0 flex-col items-center justify-center rounded-full bg-[rgb(var(--stage-top-rgb))] shadow-[inset_0_-4px_0_rgb(0_0_0/0.3)] ring-4 ring-brand-gold kiosk:h-[clamp(6rem,11vh,7.5rem)] kiosk:w-[clamp(6rem,11vh,7.5rem)]"
               aria-label={`Score ${score} out of ${SCORE_OUT_OF}`}
             >
               <span className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-brand-gold kiosk:text-[0.8rem]" aria-hidden>
@@ -47,7 +46,7 @@ export function TransitionCard({ score, onContinue, className = "" }: Transition
           <div className="min-w-0 text-left">
             <h2
               id="transition-heading"
-              className="font-display text-3xl font-black uppercase leading-none tracking-tight text-brand-gold sm:text-4xl kiosk:text-[clamp(2rem,4.2vh,2.9rem)]"
+              className="game-title text-3xl sm:text-4xl kiosk:text-[clamp(2.2rem,4.6vh,3.2rem)]"
             >
               {TRANSITION_COPY.heading}
             </h2>
@@ -69,7 +68,7 @@ export function TransitionCard({ score, onContinue, className = "" }: Transition
             ref={button}
             type="button"
             onClick={onContinue}
-            className="btn-primary w-full justify-center whitespace-nowrap px-8 py-3.5 text-lg tracking-[0.06em] sm:w-auto sm:text-xl kiosk:px-[2.5rem] kiosk:py-[clamp(0.85rem,1.9vh,1.15rem)] kiosk:text-[clamp(1.2rem,2.3vh,1.55rem)]"
+            className="btn-primary btn-blink mb-2 w-full justify-center whitespace-nowrap px-8 py-3.5 text-lg tracking-[0.06em] sm:w-auto sm:text-xl kiosk:px-[2.5rem] kiosk:py-[clamp(0.85rem,1.9vh,1.15rem)] kiosk:text-[clamp(1.2rem,2.3vh,1.55rem)]"
           >
             {NOVEL_COPY.heading} <ArrowRight className="h-6 w-6" strokeWidth={3} aria-hidden />
           </button>

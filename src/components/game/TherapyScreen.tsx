@@ -22,27 +22,26 @@ export function TherapyScreen({ name, onStart }: TherapyScreenProps) {
       animate={{ opacity: 1 }}
       transition={{ duration: reduce ? 0 : 0.2 }}
     >
-      <div className="absolute inset-0 bg-ink/55 backdrop-blur-[2px]" aria-hidden />
+      <div className="absolute inset-0 bg-ink/70 backdrop-blur-[2px]" aria-hidden />
       <motion.div
         role="dialog"
         aria-modal="true"
         aria-labelledby="therapy-greeting"
-        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto rounded-[2rem] bg-surface text-left shadow-lift kiosk:max-w-[56rem]"
-        initial={reduce ? false : { scale: 0.92, opacity: 0, y: 16 }}
+        className="game-panel max-h-[calc(100dvh-3rem)] w-full max-w-3xl overflow-y-auto text-left kiosk:max-w-[56rem]"
+        initial={reduce ? false : { scale: 0.6, opacity: 0, y: 40 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 280, damping: 24 }}
+        transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 18 }}
       >
-        <div className="tricolour-rule h-2" aria-hidden />
         <div className="px-6 py-7 sm:px-12 sm:py-10 short:py-4 kiosk:px-[3.5rem] kiosk:py-[clamp(1.25rem,3.2vh,2.5rem)]">
-        <h2 id="therapy-greeting" className="font-display text-3xl font-black text-brand-navy sm:text-4xl kiosk:text-[2.8rem]">
+        <h2 id="therapy-greeting" className="game-title text-4xl normal-case [--title-fill:white] sm:text-5xl kiosk:text-[3.2rem]">
           Hi Dr. {name},
         </h2>
-        <div className="mt-4 space-y-3 text-lg leading-snug text-ink-muted sm:text-xl kiosk:mt-[1.25rem] kiosk:text-[1.4rem]">
+        <div className="mt-4 space-y-3 text-lg leading-snug text-white/80 sm:text-xl kiosk:mt-[1.25rem] kiosk:text-[1.4rem]">
           <p>{THERAPY_INTRO[0]}</p>
-          <p className="font-semibold text-brand-navy">{THERAPY_INTRO[1]}</p>
+          <p className="font-semibold text-brand-gold">{THERAPY_INTRO[1]}</p>
         </div>
 
-        <div className="mt-5 border-t border-line pt-4 kiosk:mt-[clamp(1rem,2.4vh,1.5rem)] kiosk:pt-[clamp(0.8rem,2vh,1.25rem)]">
+        <div className="game-sheet mt-5 px-4 pb-4 pt-4 kiosk:px-[1.25rem] kiosk:mt-[clamp(1rem,2.4vh,1.5rem)] kiosk:pt-[clamp(0.8rem,2vh,1.25rem)]">
           <h3 className="eyebrow font-body kiosk:text-base">The barriers (pins)</h3>
           <ol className="mt-2 grid gap-1.5 sm:grid-cols-2 sm:gap-x-3 kiosk:mt-[0.7rem] kiosk:gap-y-[0.45rem]">
             {PINS.map((p) => (
@@ -61,7 +60,7 @@ export function TherapyScreen({ name, onStart }: TherapyScreenProps) {
 
 
         {/* Stays in view when a small screen makes the pop-up scroll. */}
-        <div className="sticky bottom-0 z-10 -mb-2 mt-6 flex justify-center bg-surface pb-2 pt-2 kiosk:mt-[clamp(1rem,2.6vh,1.75rem)]">
+        <div className="mt-7 flex justify-center pb-2 pt-2 kiosk:mt-[clamp(1rem,2.6vh,1.75rem)]">
           <button
             type="button"
             onClick={onStart}

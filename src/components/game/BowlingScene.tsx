@@ -1,18 +1,22 @@
 "use client";
 
 import { Environment, Lightformer } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { CONVENTIONAL_BALLS } from "@/data/gameData";
+import { BRAND } from "@/lib/brand";
 import { CAMERA, FRONT_ROW_Z, introBallX, verticalFovFor } from "@/lib/laneLayout";
 import { BALL_COLORS } from "@/lib/drugVisuals";
+import { followShot, HOME_SHOT } from "@/lib/cameraFollow";
+import { ballLineFor, ballPose, STRAIGHT_LINE } from "@/lib/rollAnimation";
 import type { DrugId, GamePhase, LanePins, Pin } from "@/types/game";
+import { BowlingArena } from "./BowlingArena";
 import { BowlingBall } from "./BowlingBall";
 import { BowlingLane } from "./BowlingLane";
 import { PinDeck } from "./PinDeck";
 import { PinSetter } from "./PinSetter";
-import { SceneTimelineContext, type SceneTimeline } from "./sceneClock";
+import { elapsedMs, SceneTimelineContext, useSceneTimeline, type SceneTimeline } from "./sceneClock";
 
 export interface BowlingSceneProps {
   phase: GamePhase;
@@ -38,12 +42,18 @@ export interface BowlingSceneProps {
   aimRef: MutableRefObject<number>;
   /** True while the player is dragging the ball (renders every frame). */
   aiming: boolean;
+  /** The camera follows the ball during a roll (off with reduced motion). */
+  followCam?: boolean;
 }
 
-/** Fixed camera: same position and framing for every roll. */
-function CameraRig() {
+/**
+ * The camera: framed from the bowler's end between rolls (where the pin tags
+ * and the swipe line up with it), and following the ball during a roll.
+ */
+function CameraRig({ follow }: { follow: boolean }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const size = useThree((s) => s.size);
+  const timeline = useSceneTimeline();
   useEffect(() => {
     camera.position.set(...CAMERA.position);
     camera.fov = verticalFovFor(size.width / Math.max(size.height, 1));
@@ -52,6 +62,17 @@ function CameraRig() {
     camera.lookAt(...CAMERA.target);
     camera.updateProjectionMatrix();
   }, [camera, size.width, size.height]);
+  useFrame(() => {
+    const t = timeline.current;
+    let shot = HOME_SHOT;
+    if (follow && t.phase === "rolling") {
+      const elapsed = elapsedMs(t, performance.now());
+      const line = t.lineSeed === null ? STRAIGHT_LINE : ballLineFor(t.lineSeed, t.lineDrug, t.lineAim);
+      shot = followShot(elapsed, ballPose(elapsed, line), t.strike);
+    }
+    camera.position.set(...shot.position);
+    camera.lookAt(...shot.target);
+  });
   return null;
 }
 
@@ -101,7 +122,11 @@ function Lights() {
 
   return (
     <>
-      <hemisphereLight args={["#dde4ff", "#5b4026", 0.55]} />
+      <hemisphereLight args={["#c9d2ff", "#2a1d2c", 0.4]} />
+      {/* Gold glow from the kickback trims onto the rack. */}
+      {[-1, 1].map((side) => (
+        <pointLight key={side} position={[side * 1.05, 0.55, FRONT_ROW_Z - 1]} color={BRAND.gold} intensity={1.4} distance={2.4} decay={1.5} />
+      ))}
       {/* Soft fill from behind the camera so ball colours read true. */}
       <pointLight position={[0.5, 1.1, 2.3]} intensity={2.2} decay={1.2} />
       <directionalLight
@@ -140,7 +165,7 @@ function Lights() {
 }
 
 export default function BowlingScene(props: BowlingSceneProps) {
-  const { phase, ballDrug, lane, rollStartedAt, lineSeed, lineAim = null, lineDrug, rackResetAt = null, interactive, onPinSelect, onContextLost, onReady, aimRef, aiming } =
+  const { phase, ballDrug, lane, rollStartedAt, lineSeed, lineAim = null, lineDrug, rackResetAt = null, interactive, onPinSelect, onContextLost, onReady, aimRef, aiming, followCam = false } =
     props;
 
   // The second throw is at the rack exactly as the first left it: no sweep (client request).
@@ -163,10 +188,12 @@ export default function BowlingScene(props: BowlingSceneProps) {
           onReady?.();
         }}
       >
-        <CameraRig />
+        <CameraRig follow={followCam} />
         <Invalidator deps={[phase, ballDrug, lane, rollStartedAt, aiming]} />
         <ContextLossWatcher onLost={onContextLost} />
         <Lights />
+        <fog attach="fog" args={["#060a22", 10, 24]} />
+        <BowlingArena title="CABP CHALLENGE" />
         <BowlingLane />
         <PinDeck
           lane={lane}

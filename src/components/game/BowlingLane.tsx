@@ -1,8 +1,9 @@
 "use client";
 
+import { MeshReflectorMaterial } from "@react-three/drei";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
-import { SCENE } from "@/lib/brand";
+import { BRAND, SCENE } from "@/lib/brand";
 import {
   ARROWS_Z,
   DECK_END_Z,
@@ -40,48 +41,55 @@ export function BowlingLane() {
     return tex;
   }, []);
 
-  const laneMaterials = useMemo(() => {
-    const top = new THREE.MeshPhysicalMaterial({
-      map: wood,
-      roughness: 0.42,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.1,
-    });
-    const edge = new THREE.MeshStandardMaterial({ color: "#7a4f27", roughness: 0.6 });
-    // Box faces: +x, -x, +y (top), -y, +z, -z
-    return [edge, edge, top, edge, edge, edge];
-  }, [wood]);
+  // The lane's body; its top is a separate mirror-polished plane (below).
+  const laneMaterials = useMemo(() => new THREE.MeshStandardMaterial({ color: "#7a4f27", roughness: 0.6 }), []);
 
   const arrowGeometry = useMemo(() => new THREE.ShapeGeometry(makeArrowShape()), []);
 
   useEffect(
     () => () => {
       wood.dispose();
-      laneMaterials.forEach((m) => m.dispose());
+      laneMaterials.dispose();
       arrowGeometry.dispose();
     },
     [wood, laneMaterials, arrowGeometry],
   );
 
   const gutterX = LANE_HALF_WIDTH + GUTTER_WIDTH / 2;
-  const capX = LANE_HALF_WIDTH + GUTTER_WIDTH + 0.15;
   const arrows = [-3, -2, -1, 0, 1, 2, 3];
 
   return (
     <group>
       {/* Lane bed */}
       <mesh
-        position={[0, -LANE_THICKNESS / 2, LANE_CENTER_Z]}
+        position={[0, -LANE_THICKNESS / 2 - 0.001, LANE_CENTER_Z]}
         material={laneMaterials}
-        receiveShadow
       >
         <boxGeometry args={[LANE_WIDTH, LANE_THICKNESS, LANE_LENGTH]} />
       </mesh>
+      {/* Freshly oiled boards: the ball, the pins and the neon reflect in them. */}
+      <mesh position={[0, 0, LANE_CENTER_Z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[LANE_WIDTH, LANE_LENGTH]} />
+        <MeshReflectorMaterial
+          map={wood}
+          resolution={1024}
+          blur={[500, 160]}
+          mixBlur={1}
+          mixStrength={1.1}
+          mixContrast={1}
+          mirror={0.4}
+          depthScale={0.4}
+          minDepthThreshold={0.6}
+          maxDepthThreshold={1.2}
+          roughness={0.35}
+          metalness={0}
+        />
+      </mesh>
 
-      {/* Foul line */}
+      {/* Foul line: a red neon bar */}
       <mesh position={[0, 0.0015, FOUL_LINE_Z]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[LANE_WIDTH, 0.016]} />
-        <meshStandardMaterial color="#5a3a1c" roughness={0.5} />
+        <planeGeometry args={[LANE_WIDTH, 0.02]} />
+        <meshBasicMaterial color="#ff3b47" toneMapped={false} />
       </mesh>
 
       {/* Targeting arrows, in the classic shallow V */}
@@ -92,7 +100,7 @@ export function BowlingLane() {
           position={[i * 0.205, 0.0015, ARROWS_Z - Math.abs(i) * 0.16]}
           rotation={[-Math.PI / 2, 0, 0]}
         >
-          <meshStandardMaterial color="#86552a" roughness={0.45} />
+          <meshBasicMaterial color={BRAND.gold} toneMapped={false} />
         </mesh>
       ))}
 
@@ -100,15 +108,7 @@ export function BowlingLane() {
       {[-1, 1].map((side) => (
         <mesh key={`g${side}`} position={[side * gutterX, -0.06, LANE_CENTER_Z]} receiveShadow>
           <boxGeometry args={[GUTTER_WIDTH, 0.02, LANE_LENGTH]} />
-          <meshStandardMaterial color={SCENE.gutter} roughness={0.85} />
-        </mesh>
-      ))}
-
-      {/* Capping beyond the gutters */}
-      {[-1, 1].map((side) => (
-        <mesh key={`c${side}`} position={[side * capX, -0.01, LANE_CENTER_Z]}>
-          <boxGeometry args={[0.3, 0.04, LANE_LENGTH]} />
-          <meshStandardMaterial color={SCENE.gutter} roughness={0.9} />
+          <meshStandardMaterial color={SCENE.gutter} roughness={0.35} metalness={0.5} />
         </mesh>
       ))}
 

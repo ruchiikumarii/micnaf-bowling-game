@@ -6,6 +6,7 @@ import { Component, useCallback, useEffect, useRef, useState, type ReactNode } f
 import { DRUGS } from "@/data/gameData";
 import { useElementSize } from "@/hooks/useElementSize";
 import { useWebGLSupport } from "@/hooks/useWebGLSupport";
+import { BALL_TRAVEL_MS } from "@/lib/timing";
 import type { DrugId, GamePhase, LanePins, Pin, RollResult } from "@/types/game";
 import type { LanePrompt } from "./SwipeToRoll";
 import { BallLabels } from "./BallLabels";
@@ -108,6 +109,13 @@ export function GameStage({
   useEffect(() => {
     if (phase !== "rolling") aimRef.current = 0;
   }, [phase, selectedDrug]);
+  // Impact: the lane shakes as the ball slams into the rack.
+  const [impact, setImpact] = useState<number | null>(null);
+  useEffect(() => {
+    if (phase !== "rolling" || rollStartedAt === null || reduce) return;
+    const id = window.setTimeout(() => setImpact(rollStartedAt), Math.max(0, rollStartedAt + BALL_TRAVEL_MS - performance.now()));
+    return () => window.clearTimeout(id);
+  }, [phase, rollStartedAt, reduce]);
   const handleFail = useCallback(() => setSceneFailed(true), []);
   const handleReady = useCallback(() => setSceneReady(true), []);
 
@@ -128,13 +136,14 @@ export function GameStage({
     onReady: handleReady,
     aimRef,
     aiming,
+    followCam: !reduce && phase !== "intro",
   };
 
   return (
     <div className={`flex flex-col ${wrapperClassName}`}>
     <div
       ref={stageRef}
-      className={`lane-stage relative isolate overflow-hidden ${variant === "card" ? "rounded-3xl shadow-lift" : ""} ${compact ? "lane-compact" : ""} ${className}`}
+      className={`lane-stage relative isolate overflow-hidden ${variant === "card" ? "neon-frame rounded-3xl" : ""} ${compact ? "lane-compact" : ""} ${impact !== null && impact === rollStartedAt && phase === "rolling" ? "lane-shake" : ""} ${className}`}
     >
       {/* 2D lane: the no-WebGL fallback, and the placeholder while 3D loads. */}
       {(!use3D || !sceneReady) && (
@@ -184,11 +193,11 @@ export function GameStage({
         {phase === "result" && result && (
           <motion.div
             key={`counter-${result.rollId}`}
-            initial={reduce ? false : { opacity: 0, scale: 0.9, y: -6 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduce ? 0 : 0.25 }}
-            className={`absolute left-3 top-3 z-20 flex items-center gap-3 rounded-2xl px-4 py-2.5 shadow-lift sm:left-6 sm:top-6 sm:px-6 sm:py-3.5 ${COUNTER_STYLE[result.drug]}`}
+            initial={reduce ? false : { opacity: 0, scale: 0.4, rotate: -8 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 16 }}
+            className={`absolute left-3 top-3 z-20 flex items-center gap-3 rounded-2xl px-4 py-2.5 shadow-[inset_0_2px_0_rgb(255_255_255/0.35),inset_0_-5px_0_rgb(0_0_0/0.2),0_0_0_3px_rgb(var(--stage-top-rgb)),0_6px_0_3px_rgb(var(--stage-top-rgb))] sm:left-6 sm:top-6 sm:px-6 sm:py-3.5 ${COUNTER_STYLE[result.drug]}`}
             aria-hidden
           >
             <svg viewBox="0 0 24 32" className="h-9 w-7 sm:h-12 sm:w-9" aria-hidden>
@@ -211,7 +220,7 @@ export function GameStage({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-ink/80 px-8 py-2.5 text-lg font-bold text-white sm:bottom-6 sm:text-xl"
+            className="hud-pill absolute bottom-4 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap px-8 py-2.5 text-lg sm:bottom-6 sm:text-xl"
             aria-hidden
           >
             {roller ? `${roller} · ` : ""}Rolling {DRUGS[selectedDrug].name}…

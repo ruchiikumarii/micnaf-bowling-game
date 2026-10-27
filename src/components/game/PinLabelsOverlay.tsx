@@ -2,15 +2,11 @@
 
 import { useMemo } from "react";
 import { PINS } from "@/data/gameData";
-import { FRONT_ROW_Z, PIN_HEIGHT, PIN_MAX_RADIUS, pinPosition, pinRow } from "@/lib/laneLayout";
+import { PIN_HEIGHT, PIN_MAX_RADIUS, pinPosition, pinRow } from "@/lib/laneLayout";
 import { createProjector } from "@/lib/projection";
-import { ballArrivalSeconds } from "@/lib/rollAnimation";
 import { useElementSize } from "@/hooks/useElementSize";
 import type { GamePhase, LanePins, Pin, PinNumber } from "@/types/game";
 import { PinLabel } from "./PinLabel";
-
-/** When the ball reaches the front row, measured from the start of the roll. */
-const HIT_SECONDS = ballArrivalSeconds(FRONT_ROW_Z);
 
 interface PinLabelsOverlayProps {
   phase: GamePhase;
@@ -60,8 +56,11 @@ function preferences(n: PinNumber, x: number): Slot[] {
   }
 }
 
-/** Placement order: head pin, then the middle row, then the rest. */
-const ORDER: PinNumber[] = [1, 4, 5, 6, 2, 3, 7, 8, 9, 10];
+/**
+ * Placement order: head pin, then the back row (so its tags take the free
+ * space above the rack, beside their own pins), then the rows in between.
+ */
+const ORDER: PinNumber[] = [1, 7, 8, 9, 10, 4, 5, 6, 2, 3];
 
 /**
  * Pin number/label chips positioned over the lane. The camera is fixed, so a
@@ -139,7 +138,9 @@ export function PinLabelsOverlay({ phase, lane, interactive, compact = false, pi
           // No tag for a pin that has gone over or that an earlier throw cleared,
           // and none while the rack is being reset.
           const fallen = phase === "transition" || lane[pin.number] === "gone" || ((phase === "result" || phase === "scorecard" || phase === "closing") && falls);
-          const fading = phase === "rolling" && falls;
+          // While the ball rolls the camera follows it, so the tags (aligned to the
+          // bowler's-end view) step aside until the pins have settled.
+          const fading = phase === "rolling";
           if (fallen) return null;
           return (
             <div
@@ -147,7 +148,7 @@ export function PinLabelsOverlay({ phase, lane, interactive, compact = false, pi
               className={`absolute transition-opacity duration-300 ${ANCHOR[at.slot]} ${
                 fading ? "pointer-events-none opacity-0" : "pointer-events-auto"
               }`}
-              style={{ left: at.x, top: at.y, transitionDelay: fading ? `${HIT_SECONDS}s` : "0s" }}
+              style={{ left: at.x, top: at.y, transitionDelay: "0s" }}
             >
               <PinLabel pin={pin} interactive={interactive} accessibleName={pinName(pin)} onSelect={onPinSelect} />
             </div>

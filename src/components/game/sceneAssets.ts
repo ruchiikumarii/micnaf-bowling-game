@@ -156,3 +156,115 @@ export function createPinGeometry(): THREE.LatheGeometry {
   }
   return new THREE.LatheGeometry(points, 40);
 }
+
+/** Soft falloff across the width (u), for additive neon glow strips. */
+export function createGlowTexture(): THREE.CanvasTexture {
+  const { c, ctx } = canvas(128, 4);
+  const g = ctx.createLinearGradient(0, 0, 128, 0);
+  g.addColorStop(0, "rgba(255,255,255,0)");
+  g.addColorStop(0.35, "rgba(255,255,255,0.35)");
+  g.addColorStop(0.5, "rgba(255,255,255,1)");
+  g.addColorStop(0.65, "rgba(255,255,255,0.35)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 128, 4);
+  return new THREE.CanvasTexture(c);
+}
+
+/** The arena's back wall: deep navy with faint faceted panels. */
+export function createArenaWallTexture(): THREE.CanvasTexture {
+  const W = 1024;
+  const H = 512;
+  const { c, ctx } = canvas(W, H);
+  const rand = mulberry32(11);
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#04071a");
+  bg.addColorStop(0.6, "#0b1240");
+  bg.addColorStop(1, "#141d58");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+  // Faceted triangles, a little lighter or darker than the wall.
+  const step = 64;
+  for (let y = 0; y < H; y += step) {
+    for (let x = -step; x < W; x += step) {
+      for (const flip of [0, 1]) {
+        const a = rand() * 0.07;
+        ctx.fillStyle = rand() < 0.5 ? `rgba(120,140,255,${a})` : `rgba(0,0,0,${a * 1.6})`;
+        ctx.beginPath();
+        const ox = x + ((y / step) % 2) * (step / 2);
+        if (flip) {
+          ctx.moveTo(ox, y);
+          ctx.lineTo(ox + step, y);
+          ctx.lineTo(ox + step / 2, y + step);
+        } else {
+          ctx.moveTo(ox + step / 2, y + step);
+          ctx.lineTo(ox + step * 1.5, y + step);
+          ctx.lineTo(ox + step, y);
+        }
+        ctx.fill();
+      }
+    }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.RepeatWrapping;
+  return tex;
+}
+
+/** Lit sign over a pin deck: a title framed by a ring of LED dots. */
+export function createSignTexture(title: string, accent: string, sub?: string): THREE.CanvasTexture {
+  const W = 1024;
+  const H = 256;
+  const { c, ctx } = canvas(W, H);
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#1a2462");
+  bg.addColorStop(1, "#070b26");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+  // LED dots round the edge.
+  ctx.fillStyle = accent;
+  for (let x = 18; x < W; x += 28) {
+    for (const y of [14, H - 14]) {
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  const done = () => {
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    return tex;
+  };
+  if (!title) {
+    // A plain panel: a soft glow band through the middle.
+    const glow = ctx.createLinearGradient(0, 0, W, 0);
+    glow.addColorStop(0, "rgba(255,255,255,0)");
+    glow.addColorStop(0.5, accent);
+    glow.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, H / 2 - 6, W, 12);
+    ctx.globalAlpha = 1;
+    return done();
+  }
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `900 ${sub ? 96 : 112}px "Arial Black", Arial, sans-serif`;
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 14;
+  ctx.strokeStyle = "#05081c";
+  const y = sub ? H / 2 - 22 : H / 2 + 4;
+  ctx.strokeText(title, W / 2, y);
+  ctx.shadowColor = accent;
+  ctx.shadowBlur = 28;
+  ctx.fillStyle = accent;
+  ctx.fillText(title, W / 2, y);
+  if (sub) {
+    ctx.shadowBlur = 0;
+    ctx.font = `700 40px Arial, sans-serif`;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(sub, W / 2, H / 2 + 62);
+  }
+  return done();
+}

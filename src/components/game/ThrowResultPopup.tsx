@@ -52,80 +52,110 @@ export function ThrowResultPopup({ result, score, copy, tone, onAction }: ThrowR
           exit={{ opacity: 0 }}
           transition={{ duration: reduce ? 0 : 0.2 }}
         >
-          <div className="absolute inset-0 bg-ink/60 backdrop-blur-[2px]" aria-hidden />
-          {/* A strike: confetti over the pop-up (skipped with reduced motion). */}
+          <div className="absolute inset-0 bg-ink/70 backdrop-blur-[2px]" aria-hidden />
+          {/* A strike: light rays and confetti behind the pop-up (no motion with reduced motion). */}
+          {strike && <div className="menu-rays pointer-events-none absolute inset-0 overflow-hidden !bg-none opacity-80" aria-hidden />}
           {strike && <Confetti />}
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-labelledby={headingId}
-            className="relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-surface text-center shadow-lift kiosk:max-w-[52rem]"
-            initial={reduce ? false : { scale: 0.9, opacity: 0, y: 16 }}
+            className="game-panel relative mt-8 max-h-[calc(100dvh-4rem)] w-full max-w-2xl overflow-y-auto text-center kiosk:max-w-[52rem]"
+            initial={reduce ? false : { scale: 0.6, opacity: 0, y: 40 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 22 }}
+            transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 18 }}
           >
-            <div className="tricolour-rule h-2" aria-hidden />
             <div className="flex flex-col items-center px-6 py-7 sm:px-12 sm:py-9 short:py-3 kiosk:px-[3.25rem] kiosk:py-[clamp(1.5rem,3.4vh,2.5rem)]">
-              <BrandLogo logo="productLogo" className="mb-4 h-9 sm:h-11 short:mb-1.5 short:h-6 kiosk:mb-[clamp(0.8rem,2vh,1.25rem)] kiosk:h-[clamp(2.6rem,5vh,3.6rem)]" />
+              {strike && (
+                <div className="mb-1 flex items-end gap-2 short:hidden" aria-hidden>
+                  {[0, 1, 2].map((i) => (
+                    <motion.svg
+                      key={i}
+                      viewBox="0 0 24 24"
+                      className={i === 1 ? "h-16 w-16 kiosk:h-[clamp(4rem,8vh,5.5rem)] kiosk:w-[clamp(4rem,8vh,5.5rem)]" : "h-11 w-11 kiosk:h-[clamp(2.8rem,5.6vh,3.8rem)] kiosk:w-[clamp(2.8rem,5.6vh,3.8rem)]"}
+                      initial={reduce ? false : { scale: 0, rotate: -90 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 12, delay: 0.25 + i * 0.15 }}
+                    >
+                      <path
+                        d="M12 1.8l3.1 6.6 7.1.8-5.3 4.9 1.5 7.1L12 17.6l-6.4 3.6 1.5-7.1-5.3-4.9 7.1-.8z"
+                        fill="rgb(var(--brand-gold-rgb))"
+                        stroke="rgb(var(--stage-top-rgb))"
+                        strokeWidth="1.6"
+                        strokeLinejoin="round"
+                      />
+                    </motion.svg>
+                  ))}
+                </div>
+              )}
               {/* 1. The result */}
-              <p className="eyebrow font-body kiosk:text-base">{DRUGS[result.drug].name}</p>
-              <h2
+              <motion.h2
                 id={headingId}
-                className={`mt-1.5 font-black uppercase leading-none tracking-tight short:text-[1.6rem] ${
+                className={`game-title short:text-[1.8rem] ${
                   strike
-                    ? "text-[2.6rem] text-brand-navy sm:text-6xl kiosk:text-[clamp(3rem,7vh,4.6rem)]"
-                    : "text-[2.1rem] text-brand-red sm:text-5xl kiosk:text-[clamp(2.4rem,5.4vh,3.6rem)]"
+                    ? "text-[3.2rem] sm:text-7xl kiosk:text-[clamp(3.6rem,9vh,6rem)]"
+                    : "text-[2.3rem] [--title-fill:white] [--title-stroke:rgb(var(--brand-red-rgb))] sm:text-5xl kiosk:text-[clamp(2.6rem,6vh,4rem)]"
                 }`}
+                initial={reduce ? false : { scale: 2.2, opacity: 0, rotate: -6 }}
+                animate={{ scale: 1, opacity: 1, rotate: strike ? -3 : 0 }}
+                transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 14, delay: 0.1 }}
               >
                 {copy.heading}
-              </h2>
-              {score !== null && (
-                <p className="mt-3 inline-flex items-baseline gap-2 rounded-full bg-brand-navy px-5 py-1 text-white short:mt-1.5 kiosk:mt-[0.9rem] kiosk:px-[1.4rem]">
-                  <span className="text-xs font-bold uppercase tracking-[0.16em] text-brand-gold kiosk:text-sm">Score</span>
-                  <span className="font-display text-xl font-black kiosk:text-[1.7rem]">
-                    {score}/{SCORE_OUT_OF}
-                  </span>
-                </p>
-              )}
+              </motion.h2>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 short:mt-1.5 kiosk:mt-[clamp(0.8rem,2vh,1.25rem)]">
+                <span className="rounded-xl bg-white px-3 py-1.5 shadow-[inset_0_-3px_0_rgb(0_0_0/0.12),0_3px_0_rgb(0_0_0/0.3)]">
+                  <BrandLogo logo="productLogo" className="h-7 sm:h-9 short:h-5 kiosk:h-[clamp(2rem,4vh,2.8rem)]" />
+                </span>
+                {score !== null && (
+                  <p className="hud-pill gap-2 px-5 py-2 kiosk:px-[1.4rem]">
+                    <span className="text-xs tracking-[0.16em] text-brand-gold kiosk:text-sm">Score</span>
+                    <span className="text-2xl kiosk:text-[1.9rem]">
+                      {score}/{SCORE_OUT_OF}
+                    </span>
+                  </p>
+                )}
+              </div>
+              <p className="eyebrow mt-3 font-body text-white/75 kiosk:text-base">{DRUGS[result.drug].name}</p>
               {strike &&
                 copy.lines.map((line) => (
-                  <p key={line} className="mt-2 text-lg font-bold text-brand-navy sm:text-xl kiosk:text-[clamp(1.2rem,2.4vh,1.6rem)]">
+                  <p key={line} className="mt-2 text-lg font-bold text-white sm:text-xl kiosk:text-[clamp(1.2rem,2.4vh,1.6rem)]">
                     {line}
                   </p>
                 ))}
 
               {/* 2. The pins */}
-              {!strike && (
-                standing.length > 0 && (
-                  <div className="mt-6 w-full rounded-2xl bg-surface-sunken px-4 py-4 short:mt-2 short:py-2 kiosk:mt-[clamp(1.1rem,2.6vh,1.75rem)] kiosk:px-[1.4rem] kiosk:py-[clamp(0.9rem,2vh,1.25rem)]">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft kiosk:text-sm">
-                      Still standing · {standing.length} of {result.totalPins}
-                    </p>
-                    <ul aria-label="Still standing" className="mt-3 flex flex-wrap justify-center gap-2 short:mt-1.5 kiosk:mt-[0.8rem] kiosk:gap-[0.55rem]">
-                      {standing.map((p) => (
-                        <li
-                          key={p.number}
-                          className="inline-flex items-center gap-2 rounded-full bg-surface py-1 pl-1 pr-3 text-sm font-semibold text-brand-navy shadow-sm ring-1 ring-line kiosk:text-[1rem]"
-                        >
-                          <span className="pin-chip-num shrink-0">{p.number}</span>
-                          {richToPlain(p.name)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )
+              {!strike && standing.length > 0 && (
+                <div className="game-sheet mt-5 w-full px-4 py-4 short:mt-2 short:py-2 kiosk:mt-[clamp(1rem,2.4vh,1.5rem)] kiosk:px-[1.4rem] kiosk:py-[clamp(0.9rem,2vh,1.25rem)]">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft kiosk:text-sm">
+                    Still standing · {standing.length} of {result.totalPins}
+                  </p>
+                  <ul aria-label="Still standing" className="mt-3 flex flex-wrap justify-center gap-2 short:mt-1.5 kiosk:mt-[0.8rem] kiosk:gap-[0.55rem]">
+                    {standing.map((p, i) => (
+                      <motion.li
+                        key={p.number}
+                        initial={reduce ? false : { scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 20, delay: 0.35 + i * 0.06 }}
+                        className="inline-flex items-center gap-2 rounded-full bg-surface-sunken py-1 pl-1 pr-3 text-sm font-semibold text-brand-navy shadow-[inset_0_-2px_0_rgb(0_0_0/0.08)] kiosk:text-[1rem]"
+                      >
+                        <span className="pin-chip-num shrink-0">{p.number}</span>
+                        {richToPlain(p.name)}
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
               )}
 
               {/* 3. The message and the question */}
               {!strike && (
-                <div className="mt-6 short:mt-2 kiosk:mt-[clamp(1.1rem,2.6vh,1.75rem)]">
+                <div className="mt-5 short:mt-2 kiosk:mt-[clamp(1rem,2.4vh,1.5rem)]">
                   {copy.lines.map((line) => (
-                    <p key={line} className="text-base text-ink-muted sm:text-lg kiosk:text-[clamp(1.05rem,2vh,1.25rem)]">
+                    <p key={line} className="text-base text-white/80 sm:text-lg kiosk:text-[clamp(1.05rem,2vh,1.25rem)]">
                       {line}
                     </p>
                   ))}
                   {copy.highlight && (
-                    <p className="mt-2 font-display text-2xl font-black text-brand-navy sm:text-3xl short:text-xl kiosk:text-[clamp(1.6rem,3.4vh,2.3rem)]">
+                    <p className="mt-2 font-display text-2xl font-black text-brand-gold sm:text-3xl short:text-xl kiosk:text-[clamp(1.6rem,3.4vh,2.3rem)]">
                       {copy.highlight}
                     </p>
                   )}
@@ -133,7 +163,7 @@ export function ThrowResultPopup({ result, score, copy, tone, onAction }: ThrowR
               )}
 
               {/* 4. The actions */}
-              <div className="sticky bottom-0 z-10 -mb-2 mt-6 flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-3 bg-surface pb-2 short:mt-2 kiosk:mt-[clamp(1.1rem,2.6vh,1.75rem)]">
+              <div className="mt-7 flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-3 pb-2 short:mt-3 kiosk:mt-[clamp(1.25rem,3vh,2rem)]">
                 <button
                   ref={button}
                   type="button"
@@ -143,7 +173,6 @@ export function ThrowResultPopup({ result, score, copy, tone, onAction }: ThrowR
                   {copy.button} <ArrowRight className="h-7 w-7" strokeWidth={3} aria-hidden />
                 </button>
               </div>
-
             </div>
           </motion.div>
         </motion.div>

@@ -43,26 +43,25 @@ export function NameEntryScreen({ onSubmit }: NameEntryScreenProps) {
     <motion.section
       aria-labelledby="name-heading"
       className="flex flex-1 items-center justify-center py-6 kiosk:min-h-0 kiosk:items-stretch kiosk:py-0"
-      initial={reduce ? false : { opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: reduce ? 0 : 0.35 }}
+      initial={reduce ? false : { opacity: 0, scale: 0.85, y: 30 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 280, damping: 20 }}
     >
       <form
         noValidate
         onSubmit={submit}
-        className="w-full max-w-3xl overflow-hidden rounded-[2rem] bg-surface text-center shadow-lift kiosk:flex kiosk:max-w-none kiosk:flex-col"
+        className="game-panel w-full max-w-3xl text-center kiosk:m-[0.5rem] kiosk:flex kiosk:max-w-none kiosk:flex-col"
       >
-        <div className="tricolour-rule h-2" aria-hidden />
         {/* On the kiosk the card fills the screen and the keyboard takes the spare height. */}
         <div className="px-4 py-6 sm:px-10 sm:py-8 kiosk:mx-auto kiosk:flex kiosk:min-h-0 kiosk:w-full kiosk:max-w-[90rem] kiosk:flex-1 kiosk:flex-col kiosk:px-[3rem] kiosk:py-[clamp(1.25rem,3vh,2.25rem)]">
-        <p className="eyebrow font-body kiosk:text-base">Welcome, Doctor</p>
+        <p className="eyebrow font-body text-brand-gold kiosk:text-base">Welcome, Doctor</p>
         <h2
           id="name-heading"
-          className="mt-1 font-display text-[2rem] font-black uppercase leading-tight tracking-tight text-brand-navy sm:text-5xl kiosk:text-[clamp(2.4rem,5vh,3.4rem)]"
+          className="game-title mt-2 text-[2.2rem] [--title-fill:white] sm:text-5xl kiosk:text-[clamp(2.6rem,5.4vh,3.8rem)]"
         >
           Let&apos;s Get Started
         </h2>
-        <p className="mt-2 text-base text-ink-muted sm:text-lg kiosk:mt-[0.75rem] kiosk:text-[1.25rem]">
+        <p className="mt-3 text-base text-white/75 sm:text-lg kiosk:mt-[0.75rem] kiosk:text-[1.25rem]">
           Your name is used only for the greeting in this game.
         </p>
 
@@ -101,18 +100,18 @@ export function NameEntryScreen({ onSubmit }: NameEntryScreenProps) {
         />
         </div>
         {error && (
-          <p id={errorId} role="alert" className="mt-2 text-base font-semibold text-brand-red kiosk:text-[1.1rem]">
+          <p id={errorId} role="alert" className="mt-2 inline-block rounded-full bg-brand-red px-4 py-1 text-base font-semibold text-white kiosk:text-[1.1rem]">
             Please enter your name to continue.
           </p>
         )}
 
-        <div className="mt-5 rounded-3xl bg-brand-navy p-3 shadow-inner sm:p-4 kiosk:mt-[clamp(1rem,2.4vh,1.5rem)] kiosk:min-h-0 kiosk:flex-1 kiosk:p-[1.25rem]">
+        <div className="mt-5 rounded-3xl bg-[rgb(var(--stage-top-rgb))] p-3 shadow-[inset_0_4px_10px_rgb(0_0_0/0.4)] sm:p-4 kiosk:mt-[clamp(1rem,2.4vh,1.5rem)] kiosk:min-h-0 kiosk:flex-1 kiosk:p-[1.25rem]">
           <OnScreenKeyboard value={value} onChange={change} maxLength={MAX_NAME_LENGTH} shift={shift} onShiftChange={setShift} />
         </div>
 
         <button
           type="submit"
-          className="btn-primary mt-5 px-10 py-3.5 text-xl tracking-[0.06em] sm:text-2xl kiosk:mt-[clamp(1rem,2.4vh,1.6rem)] kiosk:px-[3rem] kiosk:py-[clamp(0.8rem,1.8vh,1.1rem)] kiosk:text-[1.7rem]"
+          className="btn-primary mb-2 mt-6 px-10 py-3.5 text-xl tracking-[0.06em] sm:text-2xl kiosk:mt-[clamp(1rem,2.4vh,1.6rem)] kiosk:px-[3rem] kiosk:py-[clamp(0.8rem,1.8vh,1.1rem)] kiosk:text-[1.7rem]"
         >
           Continue <ArrowRight className="h-7 w-7" strokeWidth={3} aria-hidden />
         </button>

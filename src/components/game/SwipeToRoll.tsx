@@ -46,6 +46,8 @@ export function SwipeToRoll({ phase, hasBall, width, height, aimRef, onAimingCha
   const gesture = useRef<{ id: number; x: number; y: number; samples: { y: number; t: number }[] } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [armed, setArmed] = useState(false);
+  // Live drag, for the power meter and the aim arrow (look only: never changes the outcome).
+  const [drag, setDrag] = useState({ power: 0, angle: 0 });
   const snapBack = useRef(0);
 
   const ball = useMemo(() => {
@@ -67,6 +69,7 @@ export function SwipeToRoll({ phase, hasBall, width, height, aimRef, onAimingCha
     gesture.current = null;
     setDragging(false);
     setArmed(false);
+    setDrag({ power: 0, angle: 0 });
     if (rolled) {
       onAimingChange(false);
       return;
@@ -105,6 +108,7 @@ export function SwipeToRoll({ phase, hasBall, width, height, aimRef, onAimingCha
     if (g.samples.length > 8) g.samples.shift();
     const p = progressFor(e.clientY);
     aimRef.current = p;
+    setDrag({ power: p, angle: Math.max(-0.5, Math.min(0.5, Math.atan2(e.clientX - g.x, Math.max(1, g.y - e.clientY)))) });
     const nowArmed = g.y - e.clientY >= height * MIN_SWIPE;
     if (nowArmed !== armed) setArmed(nowArmed);
   };
@@ -165,6 +169,52 @@ export function SwipeToRoll({ phase, hasBall, width, height, aimRef, onAimingCha
         />
       )}
 
+      {/* Ready: a pulsing ring on the ball. */}
+      {showHint && ball && !reduce && (
+        <motion.span
+          className="pointer-events-none absolute rounded-full border-4 border-brand-gold"
+          style={{ left: ball.x - ball.r * 1.3, top: ball.y - ball.r * 1.3, width: ball.r * 2.6, height: ball.r * 2.6 }}
+          animate={{ scale: [0.85, 1.25], opacity: [0.9, 0] }}
+          transition={{ duration: 1.1, repeat: Infinity, ease: "easeOut" }}
+          aria-hidden
+        />
+      )}
+
+      {/* Dragging: the aim arrow from the ball, and the power meter beside it. */}
+      {dragging && ball && (
+        <>
+          <div
+            className="pointer-events-none absolute origin-bottom"
+            style={{
+              left: ball.x - ball.r * 0.45,
+              top: ball.y - ball.r * (1.2 + 4 * drag.power) - ball.r,
+              width: ball.r * 0.9,
+              height: ball.r * (1.2 + 4 * drag.power),
+              transform: `rotate(${drag.angle}rad)`,
+              transformOrigin: `50% calc(100% + ${ball.r}px)`,
+            }}
+            aria-hidden
+          >
+            <svg viewBox="0 0 20 100" preserveAspectRatio="none" className="h-full w-full drop-shadow-[0_3px_0_rgb(0_0_0/0.35)]">
+              <path d="M10 0 L20 22 L13 22 L13 100 L7 100 L7 22 L0 22 Z" fill="rgb(var(--brand-gold-rgb))" stroke="rgb(var(--stage-top-rgb))" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+            </svg>
+          </div>
+          <div
+            className="pointer-events-none absolute flex flex-col items-center gap-1"
+            style={{ left: ball.x + ball.r * 2.2, top: ball.y - ball.r * 4.2, height: ball.r * 5 }}
+            aria-hidden
+          >
+            <span className="font-display text-xs font-black uppercase tracking-wider text-white drop-shadow">Power</span>
+            <div className="relative w-4 flex-1 overflow-hidden rounded-full bg-[rgb(var(--stage-top-rgb)/0.85)] ring-2 ring-white/70 kiosk:w-[1.3rem]">
+              <div
+                className="absolute inset-x-0 bottom-0 rounded-full bg-gradient-to-t from-brand-red via-brand-gold to-white transition-[height] duration-75"
+                style={{ height: `${Math.round(drag.power * 100)}%` }}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
       <AnimatePresence>
         {showHint && ball && (
           <motion.div
@@ -192,7 +242,7 @@ export function SwipeToRoll({ phase, hasBall, width, height, aimRef, onAimingCha
 
       {(showHint || showPick || dragging) && (
         <div
-          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink/80 px-5 py-2 text-center shadow-lift backdrop-blur-sm kiosk:w-auto kiosk:max-w-[min(60rem,calc(100%-2*(min(24rem,25%)+2.75rem)))] kiosk:rounded-2xl kiosk:px-8 kiosk:py-4 ${
+          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[rgb(var(--stage-top-rgb)/0.88)] px-5 py-2 text-center shadow-[0_0_0_3px_rgb(var(--brand-gold-rgb)),0_8px_0_rgb(0_0_0/0.3)] backdrop-blur-sm kiosk:w-auto kiosk:max-w-[min(60rem,calc(100%-2*(min(24rem,25%)+2.75rem)))] kiosk:rounded-2xl kiosk:px-8 kiosk:py-4 ${
             // Before a ball is picked there is no instruction, so off the kiosk
             // (where the card holds only the instruction) there is nothing to show.
             showPick ? "hidden kiosk:block" : ""

@@ -133,8 +133,12 @@ export function GameShell({ force2D = false }: GameShellProps) {
     return "";
   }, [stage, state.phase, state.frame, state.selectedDrug, state.result]);
 
-  // No frame badge in the header (client request).
-  const frameBadge = null;
+  // HUD pills: the frame, and which throw of it, while bowling.
+  const bowling = state.phase === "ready" || state.phase === "rolling" || state.phase === "result";
+  const frameBadge = bowling || state.phase === "transition" ? state.frame : null;
+  const throwOf = bowling
+    ? { n: Math.max(1, state.phase === "ready" ? state.attempts + 1 : state.attempts), of: state.frame === 1 ? 2 : 1 }
+    : null;
 
   // Sounds: the soft "wah" after the first throw, the chime for the strike.
   const { playEnding } = game;
@@ -173,7 +177,7 @@ export function GameShell({ force2D = false }: GameShellProps) {
   );
 
   return (
-    <div className="flex min-h-[100dvh] flex-col kiosk:h-[100dvh] kiosk:overflow-hidden">
+    <div className="flex min-h-[100dvh] flex-col bg-gradient-to-b from-brand-navy to-[rgb(var(--stage-top-rgb))] kiosk:h-[100dvh] kiosk:overflow-hidden">
       {state.phase === "intro" ? (
         <IntroScreen onStart={game.start} pinName={pinName} />
       ) : (
@@ -181,6 +185,7 @@ export function GameShell({ force2D = false }: GameShellProps) {
           <GameHeader
             title={stage === "FRAME_1_READY" && state.attempts === 1 ? TITLES.SECOND_ATTEMPT : TITLES[stage]}
             frame={frameBadge}
+            throwOf={throwOf}
             soundOn={state.soundOn}
             onSoundChange={game.setSound}
             onNewSession={() => setConfirmReset(true)}
@@ -218,7 +223,7 @@ export function GameShell({ force2D = false }: GameShellProps) {
                 {prompt && (
                   <section
                     aria-label={prompt.eyebrow ?? prompt.text}
-                    className="order-first rounded-2xl bg-brand-navy px-5 py-3.5 text-center text-white kiosk:hidden"
+                    className="game-panel order-first px-5 py-3.5 text-center kiosk:hidden"
                   >
                     {prompt.eyebrow && <p className="eyebrow text-brand-gold">{prompt.eyebrow}</p>}
                     <p className="mt-1 text-base font-bold leading-snug sm:text-lg">{prompt.text}</p>
@@ -240,7 +245,7 @@ export function GameShell({ force2D = false }: GameShellProps) {
                   frame={state.frame}
                   selectedDrug={state.selectedDrug}
                   onSelect={chooseTherapy}
-                  className="order-first rounded-3xl bg-brand-navy p-4 kiosk:absolute kiosk:left-[1.5rem] kiosk:top-[1.5rem] kiosk:z-20 kiosk:w-[min(22rem,24%)] kiosk:bg-transparent kiosk:p-0"
+                  className="game-panel order-first p-4 kiosk:absolute kiosk:!bg-none kiosk:!shadow-none kiosk:left-[1.5rem] kiosk:top-[1.5rem] kiosk:z-20 kiosk:w-[min(22rem,24%)] kiosk:bg-transparent kiosk:p-0"
                 />
                 <PinKey
                   onOpenPin={game.openPin}
