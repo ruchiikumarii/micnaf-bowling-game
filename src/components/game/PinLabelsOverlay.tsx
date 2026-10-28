@@ -35,7 +35,7 @@ function rootFontPx(): number {
 function tagSizeRem(pin: Pin, compact: boolean): { w: number; h: number } {
   if (compact) {
     const small = typeof window !== "undefined" && window.innerWidth <= 420;
-    return small ? { w: 1.4, h: 1.4 } : { w: 2.5, h: 2.5 };
+    return small ? { w: 1.4, h: 1.4 } : { w: 2.15, h: 2.15 };
   }
   return { w: Math.max(2.4, pin.label.length * 0.53 + 1.2), h: 2.85 };
 }

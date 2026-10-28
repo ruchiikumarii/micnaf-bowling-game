@@ -51,7 +51,7 @@ export function buildSoundCues(pinsDown: number, totalPins: number, instant = fa
   // The ball is heard rolling the whole way, through the pins until it drops
   // into the pit. Past the set-down thud only the clean rolling part of the
   // recording is used (looped): its later part has clicks that sound like pins.
-  const roll: SoundCue = { sound: "roll", at: 0, gain: 0.9, boost: ROLL_BOOST, loop: ROLL_LOOP, fadeFrom: PIT_SECONDS - 0.5, fadeTo: PIT_SECONDS };
+  const roll: SoundCue = { sound: "roll", at: 0, gain: 0.9, boost: ROLL_BOOST, loop: ROLL_LOOP, fadeFrom: PIT_SECONDS - 0.3, fadeTo: PIT_SECONDS };
   // No pin falls (the second throw only shakes the standing pins): no crash.
   // The ball keeps rolling through the rack until it drops into the pit. Only
   // the steady rolling part of the recording is used (looped): its later part

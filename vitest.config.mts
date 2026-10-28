@@ -9,5 +9,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    // The roll checks sample every millisecond of the (long) roll; leave room on a busy machine.
+    testTimeout: 20000,
   },
 });

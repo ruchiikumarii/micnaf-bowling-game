@@ -2,7 +2,7 @@ import type { PinNumber } from "@/types/game";
 
 export const LANE_HALF_WIDTH = 0.92;
 export const GUTTER_WIDTH = 0.22;
-export const LANE_NEAR_Z = 1.2;
+export const LANE_NEAR_Z = 3.2;
 export const FOUL_LINE_Z = 0.42;
 export const ARROWS_Z = -1.25;
 
@@ -39,24 +39,24 @@ export const PIN_PROFILE: readonly (readonly [number, number])[] = [
 ];
 
 /** The head pin (pin 1), the point of the triangle nearest the bowler. */
-export const FRONT_ROW_Z = -4.3;
+export const FRONT_ROW_Z = -10.0;
 /**
  * Depth between rows. Deeper than an equilateral rack (0.40), so that from the
  * bowler's end each row stands clearly behind the one in front, as the rack
  * looks from a raised view of a real lane.
  */
 export const ROW_GAP = 0.6;
-export const DECK_END_Z = -6.45;
-export const PIT_BACK_Z = -7.05;
+export const DECK_END_Z = -12.15;
+export const PIT_BACK_Z = -12.75;
 
 export const CAMERA = {
-  position: [0, 2.1, 2.9] as const,
-  target: [0, -1.1, -6.3] as const,
+  position: [0, 2.2, 4.6] as const,
+  target: [0, -1.4, -12.0] as const,
   /** Horizontal field of view the framing is designed around. */
   horizontalFov: 63,
   // A little headroom so the back row clears the card at the top of the lane
   // and the ball clears the bottom edge, even on wide, short browser windows.
-  minVerticalFov: 34,
+  minVerticalFov: 30,
   maxVerticalFov: 62,
 };
 

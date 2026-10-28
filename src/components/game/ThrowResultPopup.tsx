@@ -2,12 +2,15 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useId, useRef } from "react";
-import { DRUGS, PINS, SCORE_OUT_OF } from "@/data/gameData";
+import { useEffect, useId, useRef, type CSSProperties } from "react";
+import { DRUGS, PINS } from "@/data/gameData";
+import { BALL_COLORS } from "@/lib/drugVisuals";
 import { richToPlain } from "@/lib/gameLogic";
 import type { PinNumber, RollResult } from "@/types/game";
 import { BrandLogo } from "./BrandLogo";
 import { Confetti } from "./Confetti";
+import { RackDiagram } from "./RackDiagram";
+import { ScoreRing } from "./ScoreRing";
 
 export interface ThrowResultCopy {
   heading: string;
@@ -66,6 +69,9 @@ export function ThrowResultPopup({ result, score, copy, tone, onAction }: ThrowR
             transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 18 }}
           >
             <div className="flex flex-col items-center px-6 py-7 sm:px-12 sm:py-9 short:py-3 kiosk:px-[3.25rem] kiosk:py-[clamp(1.5rem,3.4vh,2.5rem)]">
+              <span className="mb-3 rounded-xl bg-white px-3 py-1.5 shadow-[inset_0_-3px_0_rgb(0_0_0/0.12),0_3px_0_rgb(0_0_0/0.3)] short:mb-1.5">
+                <BrandLogo logo="productLogo" className="h-7 short:h-5 sm:h-8 kiosk:h-[clamp(1.9rem,3.6vh,2.5rem)]" />
+              </span>
               {strike && (
                 <div className="mb-1 flex items-end gap-2 short:hidden" aria-hidden>
                   {[0, 1, 2].map((i) => (
@@ -102,20 +108,22 @@ export function ThrowResultPopup({ result, score, copy, tone, onAction }: ThrowR
               >
                 {copy.heading}
               </motion.h2>
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 short:mt-1.5 kiosk:mt-[clamp(0.8rem,2vh,1.25rem)]">
-                <span className="rounded-xl bg-white px-3 py-1.5 shadow-[inset_0_-3px_0_rgb(0_0_0/0.12),0_3px_0_rgb(0_0_0/0.3)]">
-                  <BrandLogo logo="productLogo" className="h-7 sm:h-9 short:h-5 kiosk:h-[clamp(2rem,4vh,2.8rem)]" />
-                </span>
-                {score !== null && (
-                  <p className="hud-pill gap-2 px-5 py-2 kiosk:px-[1.4rem]">
-                    <span className="text-xs tracking-[0.16em] text-brand-gold kiosk:text-sm">Score</span>
-                    <span className="text-2xl kiosk:text-[1.9rem]">
-                      {score}/{SCORE_OUT_OF}
+              {/* The ball that was thrown, then the rack it left and the score. */}
+              <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-[rgb(var(--stage-top-rgb)/0.7)] py-1 pl-1 pr-4 ring-1 ring-white/15 short:mt-1.5">
+                <span className="ball-swatch h-6 w-6 kiosk:h-[1.8rem] kiosk:w-[1.8rem]" style={{ "--ball": BALL_COLORS[result.drug] } as CSSProperties} aria-hidden />
+                <span className="text-sm font-bold uppercase tracking-[0.12em] text-white/85 kiosk:text-base">{DRUGS[result.drug].name}</span>
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-5 short:mt-1.5 short:gap-3 sm:gap-8 kiosk:mt-[clamp(0.8rem,2vh,1.25rem)] kiosk:gap-[2.5rem]">
+                {!strike && (
+                  <div className="flex flex-col items-center gap-1.5">
+                    <RackDiagram lane={result.lane} className="h-24 w-28 short:h-16 short:w-[4.5rem] sm:h-28 sm:w-32 kiosk:h-[clamp(6.5rem,14vh,9rem)] kiosk:w-[clamp(7.2rem,15.5vh,10rem)]" />
+                    <span className="text-[0.7rem] font-bold uppercase tracking-[0.16em] text-white/60 kiosk:text-sm" aria-hidden>
+                      Pins left · {standing.length}
                     </span>
-                  </p>
+                  </div>
                 )}
+                {score !== null && <ScoreRing score={score} className="h-28 w-28 short:h-20 short:w-20 kiosk:h-[clamp(7rem,15vh,9.5rem)] kiosk:w-[clamp(7rem,15vh,9.5rem)]" />}
               </div>
-              <p className="eyebrow mt-3 font-body text-white/75 kiosk:text-base">{DRUGS[result.drug].name}</p>
               {strike &&
                 copy.lines.map((line) => (
                   <p key={line} className="mt-2 text-lg font-bold text-white sm:text-xl kiosk:text-[clamp(1.2rem,2.4vh,1.6rem)]">

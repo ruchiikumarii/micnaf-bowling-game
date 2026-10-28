@@ -132,8 +132,8 @@ describe("roll animation", () => {
         expect(down.lift).toBeLessThan(0); // dropped into the pit
       }
       // It stays where it came to rest: no fading away over time.
-      const later = pinPose(n, true, 9000);
-      for (const [k, v] of Object.entries(pinPose(n, true, 6000))) expect(v).toBeCloseTo(later[k as keyof typeof later], 6);
+      const later = pinPose(n, true, ROLL_TOTAL_MS + 3600);
+      for (const [k, v] of Object.entries(pinPose(n, true, ROLL_TOTAL_MS + 600))) expect(v).toBeCloseTo(later[k as keyof typeof later], 6);
     }
   });
 
@@ -184,7 +184,7 @@ describe("roll animation", () => {
         expect(atStart).toMatchObject({ lift: 0, dx: 0, dz: 0 }); // not lifted or moved
         expect(end).toMatchObject({ opacity: 1, dx: 0, dz: 0 }); // still standing
         // Only a pin in the shaking category moves; every other standing pin stays perfectly still.
-        const moved = Array.from({ length: 50 }, (_, i) => Math.abs(lanePinPose(n, lane[n], "rolling", 2000 + i * 40, ctx).angle));
+        const moved = Array.from({ length: 50 }, (_, i) => Math.abs(lanePinPose(n, lane[n], "rolling", BALL_TRAVEL_MS + i * 40, ctx).angle));
         if (lane[n] === "wobble") expect(Math.max(...moved)).toBeGreaterThan(0.1);
         else expect(Math.max(...moved)).toBe(0);
       }

@@ -69,43 +69,43 @@ export function Dialog({ open, onClose, title, eyebrow, children, footer, size =
           exit={{ opacity: 0 }}
           transition={{ duration: reduce ? 0 : 0.18 }}
         >
-          <div className="absolute inset-0 bg-ink/55" onClick={onClose} aria-hidden />
+          <div className="absolute inset-0 bg-ink/70 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
           <motion.div
             ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
             tabIndex={-1}
-            className={`relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-3xl bg-surface shadow-lift sm:rounded-3xl ${
+            className={`game-panel m-3 flex max-h-[92vh] w-full flex-col overflow-hidden sm:m-0 ${
               size === "lg" ? "sm:max-w-3xl" : "sm:max-w-xl"
             }`}
-            initial={reduce ? false : { y: 24, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={reduce ? { opacity: 0 } : { y: 16, opacity: 0 }}
-            transition={{ duration: reduce ? 0 : 0.22, ease: "easeOut" }}
+            initial={reduce ? false : { scale: 0.7, y: 30, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={reduce ? { opacity: 0 } : { scale: 0.9, y: 16, opacity: 0 }}
+            transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 340, damping: 22 }}
           >
             <div
               className={`flex justify-between gap-4 px-6 sm:px-8 ${
-                children || footer ? "items-start border-b border-line pb-4 pt-5" : "items-center py-6"
+                children || footer ? "items-start border-b border-white/15 pb-4 pt-6" : "items-center py-7"
               }`}
             >
               <div className="min-w-0">
-                {eyebrow && <div className="eyebrow mb-1">{eyebrow}</div>}
-                <h2 id={titleId} className="text-2xl font-black leading-tight text-brand-navy sm:text-3xl">
+                {eyebrow && <div className="eyebrow mb-1 text-brand-gold">{eyebrow}</div>}
+                <h2 id={titleId} className="font-display text-2xl font-black leading-tight text-white [text-shadow:0_3px_0_rgb(0_0_0/0.3)] sm:text-3xl">
                   {title}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="-mr-2 rounded-full p-2 text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
+                className="hud-btn -mr-1 shrink-0"
                 aria-label="Close"
               >
-                <X className="h-6 w-6" aria-hidden />
+                <X className="h-6 w-6" strokeWidth={3} aria-hidden />
               </button>
             </div>
             {children && <div className="overflow-y-auto px-6 py-5 sm:px-8">{children}</div>}
-            {footer && <div className={`px-6 py-4 sm:px-8 ${children ? "border-t border-line" : ""}`}>{footer}</div>}
+            {footer && <div className={`px-6 pb-6 pt-4 sm:px-8 ${children ? "border-t border-white/15" : ""}`}>{footer}</div>}
           </motion.div>
         </motion.div>
       )}

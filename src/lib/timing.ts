@@ -1,5 +1,5 @@
 /** Foul line to head pin (the longer lane keeps the ball at a natural pace). */
-export const BALL_TRAVEL_MS = 2400;
+export const BALL_TRAVEL_MS = 4600;
 
 /** Time after impact for pins to tip, slide and settle. */
 export const PIN_SETTLE_MS = 3400;

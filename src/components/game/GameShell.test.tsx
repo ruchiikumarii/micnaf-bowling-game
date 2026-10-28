@@ -65,7 +65,7 @@ function frame2() {
 const laneTags = () => screen.queryAllByRole("button", { name: /^Pin \d+, / }).map((b) => b.getAttribute("aria-label")?.match(/^Pin (\d+)/)?.[1]);
 
 const disclaimer = () => {
-  expect(screen.getByText(FOOTER_NOTE)).toBeVisible();
+  expect(screen.queryByText(FOOTER_NOTE)).not.toBeInTheDocument(); // removed from the footer (client request)
   return screen.getByText(DISCLAIMER);
 };
 

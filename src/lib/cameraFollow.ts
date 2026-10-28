@@ -23,20 +23,27 @@ const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const smooth = (t: number) => t * t * (3 - 2 * t);
 const mix = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 
+/** The chase: this far behind and above the ball, looking this far ahead of it. */
+const BEHIND = 2.6;
+const ABOVE = 0.95;
+const LOOK_AHEAD = 3.2;
+
 /**
  * The follow camera during a roll: it picks up the ball, chases it down the
- * lane from behind and above, holds a close-up of the rack while the pins
- * fall, then flies home before the result. A pure function of the roll time
- * and the ball's position, so every roll is filmed the same way.
+ * lane from behind and above (looking a little ahead of the ball, so the ball
+ * stays in the lower part of the picture), holds a close-up of the rack while
+ * the pins fall, then flies home before the result. A pure function of the
+ * roll time and the ball's position, so every roll is filmed the same way.
  */
 export function followShot(elapsedMs: number, ball: { x: number; z: number }, strike = false): CameraShot {
   if (!Number.isFinite(elapsedMs) || elapsedMs <= 0) return HOME_SHOT;
-  const chaseZ = Math.max(CLOSEST_Z, ball.z + 2.3);
+  const chaseZ = Math.max(CLOSEST_Z, ball.z + BEHIND);
   const chase: CameraShot = {
-    position: [ball.x * 0.45, 0.95 + (chaseZ - CLOSEST_Z) * 0.12, chaseZ],
-    target: [ball.x * 0.25, 0.12, FRONT_ROW_Z - 1.1],
+    position: [ball.x * 0.45, ABOVE, chaseZ],
+    target: [ball.x * 0.25, 0.15, Math.max(FRONT_ROW_Z - 1.1, ball.z - LOOK_AHEAD)],
   };
-  const settleEnd = BALL_TRAVEL_MS + PIN_SETTLE_MS;
+  // Home a little before the result, so the last frame of the roll is the bowler's view.
+  const settleEnd = BALL_TRAVEL_MS + PIN_SETTLE_MS - 250;
   const w = smooth(clamp01(elapsedMs / PICK_UP_MS)) * (1 - smooth(clamp01((elapsedMs - (settleEnd - RETURN_MS)) / RETURN_MS)));
   let position = mix(HOME_SHOT.position, chase.position, w);
   const target = mix(HOME_SHOT.target, chase.target, w);

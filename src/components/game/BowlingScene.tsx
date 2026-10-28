@@ -192,7 +192,7 @@ export default function BowlingScene(props: BowlingSceneProps) {
         <Invalidator deps={[phase, ballDrug, lane, rollStartedAt, aiming]} />
         <ContextLossWatcher onLost={onContextLost} />
         <Lights />
-        <fog attach="fog" args={["#060a22", 10, 24]} />
+        <fog attach="fog" args={["#060a22", 19, 44]} />
         <BowlingArena title="CABP CHALLENGE" />
         <BowlingLane />
         <PinDeck

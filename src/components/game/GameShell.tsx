@@ -304,7 +304,7 @@ export function GameShell({ force2D = false }: GameShellProps) {
         title="Start a new game?"
         footer={
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button type="button" className="btn-outline justify-center px-6 py-3" onClick={() => setConfirmReset(false)}>
+            <button type="button" className="btn-ghost justify-center px-6 py-3" onClick={() => setConfirmReset(false)}>
               Keep playing
             </button>
             <button
@@ -320,7 +320,7 @@ export function GameShell({ force2D = false }: GameShellProps) {
           </div>
         }
       >
-        <p className="text-lg text-ink-muted">
+        <p className="text-lg text-white/80">
           This clears the name and both frames, and returns to the start screen for the next doctor.
         </p>
       </Dialog>
